@@ -11,7 +11,7 @@ router.get('/blogs', async (req, res) => {
   if (blogsData) {
     res.json(blogsData)
   } else {
-    res.send('Data not found');
+    res.json({ message: 'Failed. Blogs not found' })
   }
 
   res.end()
@@ -23,7 +23,7 @@ router.get('/blogs/:id', async (req, res) => {
   if (blogsData) {
     res.json(blogsData)
   } else {
-    res.send('Data not found');
+    res.json({ message: 'Failed. Blog not found' })
   }
   res.end();
 })
@@ -34,7 +34,7 @@ router.get('/blogs/all/:limit', async (req, res) => {
   if (blogsData) {
     res.json(blogsData)
   } else {
-    res.send('Data not found');
+    res.json({ message: 'Blog not filtered' })
   }
 
   res.end()
@@ -47,9 +47,9 @@ router.post('/blogs', async (req, res) => {
   const saveBlog = await newBlog.save()
 
   if (saveBlog) {
-    res.send('Blog added')
+    res.json({ message: 'Blog added' })
   } else {
-    res.send('Failed. Blog not added')
+    res.json({ message: 'Failed. Blog not added' })
   }
 
   res.end()
@@ -59,9 +59,9 @@ router.delete('/blogs/:id', async (req, res) => {
   const deleteBlog = await schemas.Blogs.findByIdAndDelete(req.params.id);
 
   if (deleteBlog) {
-    res.send('Blog Deleted');
+    res.json({ message: 'Blog deleted' })
   } else {
-    res.send('An error ocurred');
+    res.json({ message: 'Failed. Blog not deleted' })
   }
 
   res.end()
@@ -93,12 +93,7 @@ router.post('/users/login', async (req, res) => {
   if (rawUserData) {
     if (username === rawUserData.username) userData.username = true;
 
-    await bcrypt
-      .compare(password, rawUserData.password)
-      .then(res => {
-        userData.password = res;
-      })
-      .catch(err => console.error(err.message))
+    userData.password = await comparePassword(password, rawUserData.password);
   }
 
   res.json(userData)
@@ -126,9 +121,9 @@ router.post('/users', async (req, res) => {
   const saveUser = await newUser.save()
 
   if (saveUser) {
-    res.send('User created')
+    res.json({ message: 'User created' })
   } else {
-    res.send('Failed. User not created')
+    res.json({ message: 'Failed. User not created' })
   }
 
   res.end()
@@ -145,9 +140,9 @@ router.put('/users/:username', async (req, res) => {
     const updateUser = await schemas.Users.findOneAndUpdate(filter, update);
 
     if (updateUser) {
-      res.send('User updated')
+      res.json({ message: 'User updated' })
     } else {
-      res.send('Failed. User not updated')
+      res.json({ message: 'Failed. User not updated' })
     }
   }
 
@@ -157,9 +152,9 @@ router.put('/users/:username', async (req, res) => {
     const updateUser = await schemas.Users.findOneAndUpdate(filter, update);
 
     if (updateUser) {
-      res.send('User updated')
+      res.json({ message: 'User updated' })
     } else {
-      res.send('Failed. User not updated')
+      res.json({ message: 'Failed. User not updated' })
     }
   }
 
@@ -172,12 +167,23 @@ router.delete('/users/:username', async (req, res) => {
   const deleteUser = await schemas.Users.findOneAndDelete(filter);
 
   if (deleteUser) {
-    res.send('Blog Deleted');
+    res.json({ message: 'User deleted' })
   } else {
-    res.send('Error: user not deleted')
+    res.json({ message: 'Failed. User not deleted' })
   }
 
   res.end()
 })
+
+// ============= Fuctions ============= //
+
+function comparePassword(password, hashPassword) {
+  bcrypt
+    .compare(password, hashPassword)
+    .then(res => {
+      return res;
+    })
+    .catch(err => console.error(err.message))
+}
 
 module.exports = router

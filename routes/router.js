@@ -5,6 +5,28 @@ const bcrypt = require("bcrypt")
 
 const saltRounds = 10;
 
+// ============= Fuctions ============= //
+
+async function hashPassword(password) {
+  await bcrypt
+    .hash(password, saltRounds)
+    .then(hash => {
+      return hash;
+    })
+    .catch(err => console.error(err.message))
+}
+
+async function comparePassword(password, hashPassword) {
+  await bcrypt
+    .compare(password, hashPassword)
+    .then(res => {
+      return res;
+    })
+    .catch(err => console.error(err.message))
+}
+
+// ========================================= //
+
 router.get('/blogs', async (req, res) => {
   const blogsData = await schemas.Blogs.find({}).exec()
 
@@ -93,7 +115,7 @@ router.post('/users/login', async (req, res) => {
   if (rawUserData) {
     if (username === rawUserData.username) userData.username = true;
 
-    userData.password = await comparePassword(password, rawUserData.password);
+    userData.password = comparePassword(password, rawUserData.password);
   }
 
   res.json(userData)
@@ -104,17 +126,10 @@ router.post('/users/login', async (req, res) => {
 router.post('/users', async (req, res) => {
   const { username, fullName, password, recoveryAnswer, recoveryQuestion, role } = req.body;
 
-  let hashPassword = '';
-
-  await bcrypt
-    .hash(password, saltRounds)
-    .then(hash => {
-      hashPassword = hash;
-    })
-    .catch(err => console.error(err.message))
+  const newPassword = await hashPassword(password);
 
   const newUser = new schemas.Users({
-    username: username, fullName: fullName, password: hashPassword,
+    username: username, fullName: fullName, password: newPassword,
     recoveryAnswer: recoveryAnswer, recoveryQuestion: recoveryQuestion,
     role: role
   })
@@ -135,7 +150,9 @@ router.put('/users/:username', async (req, res) => {
   const filter = { username: req.params.username };
 
   if (password) {
-    const update = { password: password };
+    const hashedPassword = await hashPassword(password)
+
+    const update = { password: hashedPassword };
 
     const updateUser = await schemas.Users.findOneAndUpdate(filter, update);
 
@@ -174,16 +191,5 @@ router.delete('/users/:username', async (req, res) => {
 
   res.end()
 })
-
-// ============= Fuctions ============= //
-
-function comparePassword(password, hashPassword) {
-  bcrypt
-    .compare(password, hashPassword)
-    .then(res => {
-      return res;
-    })
-    .catch(err => console.error(err.message))
-}
 
 module.exports = router

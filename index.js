@@ -1,4 +1,5 @@
 const express = require('express')
+const http = require('http');
 const https = require("https");
 const fs = require("fs");
 const path = require("path");
@@ -28,6 +29,8 @@ const options = {
   cert: fs.readFileSync(path.join(__dirname, "localhost.pem")),
 };
 
+var httpServer = http.createServer(app);
+
 // Create HTTPS server
 const server = https.createServer(options, app);
 
@@ -38,10 +41,11 @@ mongoose.connect(process.env.ATLAS_URI, dbOptions)
 .catch(err => console.log(err))
 
 const port = process.env.PORT
-// app.listen(port, () => {
-//   console.log(`Server is running on: http://localhost:${port}/`)
-// })
+const httpPort = 8080;
+httpServer.listen(httpPort, () => {
+  console.log(`HTTP server is running on: http://localhost:${httpPort}/`)
+})
 
 server.listen(port, () => {
-  console.log(`App listening on https://localhost:${port}`);
+  console.log(`HTTPS server listening on https://localhost:${port}`);
 });

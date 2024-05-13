@@ -37,12 +37,11 @@ mongoose.connect(process.env.ATLAS_URI, dbOptions)
 .then(() => console.log("Database Connected!"))
 .catch(err => console.log(err))
 
-// const port = process.env.PORT
+const port = process.env.PORT
 // app.listen(port, () => {
 //   console.log(`Server is running on: http://localhost:${port}/`)
 // })
 
-const httpsPort = process.env.HTTPSPORT
-server.listen(httpsPort, () => {
-  console.log(`App listening on https://localhost:${httpsPort}`);
+server.listen(port, () => {
+  console.log(`App listening on https://localhost:${port}`);
 });

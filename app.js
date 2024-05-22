@@ -40,12 +40,12 @@ mongoose.connect(process.env.ATLAS_URI, dbOptions)
 .then(() => console.log("Database Connected!"))
 .catch(err => console.log(err))
 
-const port = process.env.PORT
-const httpPort = 8080;
+const httpsPort = process.env.HTTPS_PORT || 8080;
+const httpPort = process.env.PORT || 80;
 httpServer.listen(httpPort, () => {
   console.log(`HTTP server is running on: http://localhost:${httpPort}/`)
 })
 
-server.listen(port, () => {
-  console.log(`HTTPS server listening on https://localhost:${port}`);
+server.listen(httpsPort, () => {
+  console.log(`HTTPS server listening on https://localhost:${httpsPort}`);
 });
